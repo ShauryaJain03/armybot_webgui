@@ -14,17 +14,38 @@
             background-color: #f0f0f0;
         }
 
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
         .connection-form {
             width: 100%;
             margin-bottom: 20px;
+        }
+
+
+        .position-display {
+            width: 200px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
         }
     </style>
 </head>
 
 <body>
     <div class="connection-form">
-        <input type="text" id="rosbridge-address" placeholder="ws://localhost:9090">
+        <input type="text" id="rosbridge-address" placeholder="http://0.0.0.0:9090/">
         <button onclick="connectToROS()">Connect</button>
+    </div>
+    <div class="dashboard">
+        <div class="position-display">
+            <h3>Position</h3>
+            <p>X: <span id="position-x">0</span></p>
+            <p>Y: <span id="position-y">0</span></p>
+        </div>
     </div>
 
     <script>
@@ -38,8 +59,7 @@
 
             ros.on('connection', function () {
                 console.log('Connected to rosbridge server.');
-                // Connected ! 
-                // We can now pull date from the topics. 
+                setupTopics();
             });
 
             ros.on('error', function (error) {
@@ -51,7 +71,28 @@
             });
         }
 
+        function setupTopics() {
+            // Set up odometry topic
+            const odomTopic = new ROSLIB.Topic({
+                ros: ros,
+                name: '/bot_controller/odom',
+                messageType: 'nav_msgs/Odometry'
+            });
+
+            odomTopic.subscribe(function (message) {
+                document.getElementById('position-x').textContent = message.pose.pose.position.x.toFixed(2);
+                document.getElementById('position-y').textContent = message.pose.pose.position.y.toFixed(2);
+            });
+        }
+
+
     </script>
 </body>
 
 </html>
+
+<!-- launch in ros2 workspace - ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+launch in webgui workspace - python3 -m http.server 7000 
+and navigate to http://0.0.0.0:7000/
+connect to http://0.0.0.0:9090/ and launch gazebo simulation to view odometry x,y values in browser 
+-->
