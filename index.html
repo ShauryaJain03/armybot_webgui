@@ -11,24 +11,43 @@
 </head>
 
 <body>
-    <div class="connection-form">
-        <input type="text" id="rosbridge-address" placeholder="http://0.0.0.0:9090/">
-        <button onclick="connectToROS()">Connect</button>
+    <div class="top-panel">
+        <h1>Control Panel</h1>
+        <div class="connection-form">
+            <input type="text" id="rosbridge-address" placeholder="http://0.0.0.0:9090/">
+            <button onclick="connectToROS()">Connect</button>
+        </div>
     </div>
+
     <div class="dashboard">
         <img src="http://0.0.0.0:8080/stream?topic=/camera/image_raw"/ class="image-view" id="camera-feed" alt="Camera Feed">
         <div class="control_feedback">
+        <div class="position-display">
+            <h3>Robot State</h3>
+            <p><strong>Position</strong></p>
+            <p>X: <span id="position-x">0</span></p>
+            <p>Y: <span id="position-y">0</span></p>
+            <p><strong>Velocity</strong></p>
+            <p>Linear: <span id="velocity-linear">0</span> m/s</p>
+            <p>Angular: <span id="velocity-angular">0</span> rad/s</p>
+        </div>
             <div class="joy-display">
                 <h2 align="center">Joystick</h2>
                 <div class="joystick-container" id="joystick"></div>
             </div>
-            <div class="position-display">
-                <h3>Position</h3>
-                <p>X: <span id="position-x">0</span></p>
-                <p>Y: <span id="position-y">0</span></p>
-            </div>
+
         </div>
     </div>
+    <div class="command-panel">
+        <h3>Command Panel</h3>
+        <div class="command-buttons">
+            <button class="start-btn" onclick="sendStart()">Start</button>
+            <button class="stop-btn" onclick="sendStop()">Stop</button>
+            <button class="return-btn" onclick="sendReturn()">Return to Base</button>
+            <button class="emergency-btn" onclick="sendEmergencyStop()">Emergency Stop</button>
+        </div>
+    </div>
+
 
 
     <script>
@@ -78,6 +97,9 @@
             odomTopic.subscribe(function (message) {
                 document.getElementById('position-x').textContent = message.pose.pose.position.x.toFixed(2);
                 document.getElementById('position-y').textContent = message.pose.pose.position.y.toFixed(2);
+            // Velocity
+                document.getElementById('velocity-linear').textContent = message.twist.twist.linear.x.toFixed(2);
+                document.getElementById('velocity-angular').textContent = message.twist.twist.angular.z.toFixed(2);
             });
 
             // Set up joystick
@@ -96,8 +118,8 @@
             joystick = nipplejs.create(options);
 
             joystick.on('move', function (evt, data) {
-                const maxSpeed = 1.0; // m/s
-                const maxTurn = 1.0; // rad/s
+                const maxSpeed = 2.0; // m/s
+                const maxTurn = 1.5; // rad/s
 
                 const linear = Math.sin(data.angle.radian) * maxSpeed * data.distance / 75;
                 const angular = -Math.cos(data.angle.radian) * maxTurn * data.distance / 75;
@@ -119,6 +141,27 @@
                 cmdVelTopic.publish(twist);
             });
         }
+
+        function sendStart() {
+            logToConsole("Start command sent.");
+            // TODO: Add ROS topic publish for start
+        }
+
+        function sendStop() {
+            logToConsole("Stop command sent.");
+            // TODO: Add ROS topic publish for stop
+        }
+
+        function sendReturn() {
+            logToConsole("Return to base command sent.");
+            // TODO: Add ROS topic publish for return
+        }
+
+        function sendEmergencyStop() {
+            logToConsole("EMERGENCY STOP triggered!");
+            // TODO: Add ROS topic publish for emergency stop
+        }
+
     </script>
 </body>
 </html>
