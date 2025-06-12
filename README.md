@@ -6,3 +6,4 @@ This interface allows you to:
 - Connect to the robot via WebSocket
 - Send velocity (`/cmd_vel`) commands from your browser
 - Switch between basic navigation commands (Forward, Backward, Left, Right, Stop)
+- View live camera feed and odometry 
