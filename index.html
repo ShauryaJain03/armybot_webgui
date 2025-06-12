@@ -7,33 +7,7 @@
     <title>ROS Web Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-        }
-
-        .dashboard {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 40px;
-        }
-
-        .connection-form {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-
-        .position-display {
-            width: 200px;
-            padding: 10px;
-            background-color: #fff;
-            border-radius: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -42,14 +16,20 @@
         <button onclick="connectToROS()">Connect</button>
     </div>
     <div class="dashboard">
-        <div class="joystick-container" id="joystick"></div>
         <img src="http://0.0.0.0:8080/stream?topic=/camera/image_raw"/ class="image-view" id="camera-feed" alt="Camera Feed">
-        <div class="position-display">
-            <h3>Position</h3>
-            <p>X: <span id="position-x">0</span></p>
-            <p>Y: <span id="position-y">0</span></p>
+        <div class="control_feedback">
+            <div class="joy-display">
+                <h2 align="center">Joystick</h2>
+                <div class="joystick-container" id="joystick"></div>
+            </div>
+            <div class="position-display">
+                <h3>Position</h3>
+                <p>X: <span id="position-x">0</span></p>
+                <p>Y: <span id="position-y">0</span></p>
+            </div>
         </div>
     </div>
+
 
     <script>
         let ros;
@@ -108,7 +88,7 @@
             const options = {
                 zone: document.getElementById('joystick'),
                 mode: 'static',
-                position: {left: '50%', top: '50%'},
+                position: {left: '75%', top: '35%'},
                 color: 'blue',
                 size: 150
             };
@@ -147,14 +127,5 @@
 launch in webgui workspace - python3 -m http.server 7000 
 and navigate to http://0.0.0.0:7000/
 connect to http://0.0.0.0:9090/ and launch gazebo simulation to view odometry x,y values in browser 
-const imageTopic = new ROSLIB.Topic({
-                ros: ros,
-                name: '/camera/image_raw/compressed',
-                messageType: 'sensor_msgs/CompressedImage'
-            });
-
-            imageTopic.subscribe(function (message) {
-                document.getElementById('camera-feed').src = "data:image/jpeg;base64," + message.data;
-            });
 
 -->
