@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROS Web Dashboard</title>
+    <title>UGV Control Interface</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.138.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/eventemitter2@6.4.5/umd/eventemitter2.min.js"></script>
@@ -15,52 +15,222 @@
     <script src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
     <script src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
     <script src="http://static.robotwebtools.org/ros3djs/current/ros3d.min.js"></script>
-    <script src="script.js"></script>
-    <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-    <div class="top-panel">
-        <h1>Control Panel</h1>
-        <div class="connection-form">
-            <input type="text" id="rosbridge-address" placeholder="http://0.0.0.0:9090/">
-            <button onclick="connectToROS()">Connect</button>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">UGV Control</div>
+            <div class="connection-status">
+                <div class="status-dot" id="ros-status-dot"></div>
+                <span id="ros-status-text">ROS Disconnected</span>
+            </div>
         </div>
-    </div>
 
-    <div class="dashboard">
-        <img src="http://0.0.0.0:8080/stream?topic=/camera/image_raw"/ class="image-view" id="camera-feed" alt="Camera Feed">
-        <div class="control_feedback">
-        <div class="position-display">
-            <h3>Robot State</h3>
-            <p><strong>Position</strong></p>
-            <p>X: <span id="position-x">0</span></p>
-            <p>Y: <span id="position-y">0</span></p>
-            <p><strong>Velocity</strong></p>
-            <p>Linear: <span id="velocity-linear">0</span> m/s</p>
-            <p>Angular: <span id="velocity-angular">0</span> rad/s</p>
-        </div>
-            <div class="joy-display">
-                <h2 align="center">Joystick</h2>
-                <div class="joystick-container" id="joystick"></div>
+        <!-- Control Panel -->
+        <div class="panel">
+            <div class="panel-title">Control</div>
+            
+            <!-- ROS Connection -->
+            <div class="connection-section">
+                <div class="input-group">
+                    <label>ROSBridge Server</label>
+                    <input type="text" id="rosbridge-address" value="http://0.0.0.0:9090/" placeholder="http://0.0.0.0:9090/">
+                </div>
+                <div class="control-buttons">
+                    <div class="control-btn" onclick="connectToROS()">Connect</div>
+                    <div class="control-btn" onclick="disconnectFromROS()">Disconnect</div>
+                </div>
+            </div>
+            
+            <!-- Mode Selection -->
+            <div class="section">
+                <div class="section-title">Mode</div>
+                <div class="mode-grid">
+                    <div class="mode-btn active" data-mode="manual">Manual</div>
+                    <div class="mode-btn" data-mode="apriltag">Follow Human</div>
+                    <div class="mode-btn" data-mode="gps">GPS Navigate</div>
+                    <div class="mode-btn" data-mode="autonomous">Explore</div>
+                    <div class="mode-btn" data-mode="return">Return Home</div>
+                </div>
             </div>
 
-        </div>
-    </div>
-    
-    <div id="scan-viewer" style="width: 800px; height: 600px; margin: 20px auto; border: 1px solid #ccc;"></div>
+            <!-- Manual Control -->
+            <div class="section" id="manualControls">
+                <div class="section-title">Manual Control</div>
+                <div class="joystick-area" id="joystick-zone">
+                    <!-- Joystick will be created here -->
+                </div>
+                <div class="velocity-display">
+                    <div class="velocity-item">
+                        <span>Linear:</span>
+                        <span id="cmd-linear">0.00 m/s</span>
+                    </div>
+                    <div class="velocity-item">
+                        <span>Angular:</span>
+                        <span id="cmd-angular">0.00 rad/s</span>
+                    </div>
+                </div>
+                <div class="control-buttons">
+                    <div class="control-btn" onclick="emergencyStop()">Emergency Stop</div>
+                </div>
+            </div>
 
-    <div class="command-panel">
-        <h3>Command Panel</h3>
-        <div class="command-buttons">
-            <button class="start-btn" onclick="sendStart()">Start</button>
-            <button class="stop-btn" onclick="sendStop()">Stop</button>
-            <button class="return-btn" onclick="sendReturn()">Return to Base</button>
-            <button class="emergency-btn" onclick="sendEmergencyStop()">Emergency Stop</button>
+            <!-- GPS Controls -->
+            <div class="section" id="gpsControls" style="display: none;">
+                <div class="section-title">GPS Target</div>
+                <div class="input-group">
+                    <label>Latitude</label>
+                    <input type="number" placeholder="28.7041" step="0.000001">
+                </div>
+                <div class="input-group">
+                    <label>Longitude</label>
+                    <input type="number" placeholder="77.1025" step="0.000001">
+                </div>
+                <div class="control-buttons">
+                    <div class="control-btn">Set Target</div>
+                    <div class="control-btn">Navigate</div>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="section">
+                <div class="section-title">Settings</div>
+                <div class="input-group">
+                    <label>Max Speed</label>
+                    <input type="range" id="speedSlider" min="0.1" max="2.0" step="0.1" value="1.0">
+                    <small id="speedValue">1.0 m/s</small>
+                </div>
+                <div class="input-group">
+                    <label>Navigation Mode</label>
+                    <select>
+                        <option>SLAM Mapping</option>
+                        <option>Map-based</option>
+                        <option>Mapless</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization Panel -->
+        <div class="panel">
+            <div class="panel-title">Camera Feed</div>
+            <div class="view-toggles">
+                <!-- <div class="toggle-btn active">Map</div>
+                <div class="toggle-btn">LiDAR</div>-->
+                <div class="toggle-btn">
+                    <img src="http://0.0.0.0:8080/stream?topic=/camera/image_raw" class="image-view" id="camera-feed" alt="Camera Feed">
+                </div>
+            </div>
+            <div class="map-container">
+                <div class="map-placeholder">
+                    Map Visualization<br>
+                    <small>Connect to ROS for live data</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Panel -->
+        <div class="panel">
+            <div class="panel-title">Status</div>
+            
+            <!-- Robot Status -->
+            <div class="section">
+                <div class="section-title">Robot</div>
+                <div class="status-item">
+                    <span class="status-label">Mode</span>
+                    <span class="status-value" id="currentMode">Manual</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Speed</span>
+                    <span class="status-value" id="current-speed">0.00 m/s</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Battery</span>
+                    <span class="status-value">85%</span>
+                </div>
+                <div class="battery-bar">
+                    <div class="battery-fill"></div>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="section">
+                <div class="section-title">Position</div>
+                <div class="status-item">
+                    <span class="status-label">X</span>
+                    <span class="status-value" id="position-x">0.00 m</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Y</span>
+                    <span class="status-value" id="position-y">0.00 m</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Z</span>
+                    <span class="status-value" id="position-z">0.00 m</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Heading</span>
+                    <span class="status-value" id="heading">0°</span>
+                </div>
+            </div>
+
+            <!-- Velocity -->
+            <div class="section">
+                <div class="section-title">Velocity</div>
+                <div class="status-item">
+                    <span class="status-label">Linear X</span>
+                    <span class="status-value" id="velocity-linear">0.00 m/s</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Angular Z</span>
+                    <span class="status-value" id="velocity-angular">0.00 rad/s</span>
+                </div>
+            </div>
+
+            <!-- Sensors -->
+            <div class="section">
+                <div class="section-title">Sensors</div>
+                <div class="status-item">
+                    <span class="status-label">3D LiDAR</span>
+                    <span class="status-value success">Active</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Camera</span>
+                    <span class="status-value success">Active</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">IMU</span>
+                    <span class="status-value success">Active</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">AprilTag</span>
+                    <span class="status-value warning">No Target</span>
+                </div>
+            </div>
+
+            <!-- Mission -->
+            <div class="section">
+                <div class="section-title">Mission</div>
+                <div class="status-item">
+                    <span class="status-label">Task</span>
+                    <span class="status-value">Standby</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Runtime</span>
+                    <span class="status-value" id="runtime">00:00</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Distance</span>
+                    <span class="status-value" id="total-distance">0.00 m</span>
+                </div>
+            </div>
         </div>
     </div>
+    <script src="script.js"></script>
 </body>
 </html>
+
 
 <!-- launch in ros2 workspace - ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 launch in webgui workspace - python3 -m http.server 7000 
