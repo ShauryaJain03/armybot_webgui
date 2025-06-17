@@ -7,6 +7,7 @@ let isConnected = false;
 let startTime = Date.now();
 let totalDistance = 0;
 let lastPosition = { x: 0, y: 0 };
+let setModeService; // Add service variable
 
 // Connect to ROS
 function connectToROS() {
@@ -25,6 +26,7 @@ function connectToROS() {
         isConnected = true;
         updateConnectionStatus(true);
         setupTopics();
+        setupServices(); // Add service setup
         setupJoystick();
     });
 
@@ -41,6 +43,122 @@ function connectToROS() {
     });
 }
 
+// Setup ROS services
+function setupServices() {
+    // Set up the set_mode service
+    setModeService = new ROSLIB.Service({
+        ros: ros,
+        name: '/set_mode',
+        serviceType: 'bot_msgs/srv/SetMode'
+    });
+}
+
+// Function to call the set_mode service
+function setMode(modeName) {
+    if (!isConnected || !setModeService) {
+        console.error('ROS not connected or service not available');
+        updateModeStatus('Error: Not connected to ROS', false);
+        return;
+    }
+
+    // Create the service request
+    const request = new ROSLIB.ServiceRequest({
+        mode_name: modeName
+    });
+
+    // Update UI to show loading state
+    updateModeStatus(`Setting mode to ${modeName}...`, null);
+
+    // Call the service
+    setModeService.callService(request, function(result) {
+        console.log('Service call result:', result);
+        
+        if (result.success) {
+            console.log(`Successfully set mode to: ${modeName}`);
+            updateModeStatus(`Mode: ${modeName}`, true);
+            
+            // Update the current mode display
+            document.getElementById('currentMode').textContent = getModeName(modeName);
+            
+            // Update active button
+            updateActiveModeButton(modeName);
+            
+            // Show/hide relevant controls
+            toggleControlsForMode(modeName);
+            
+        } else {
+            console.error('Service call failed:', result.message);
+            updateModeStatus(`Error: ${result.message}`, false);
+        }
+    }, function(error) {
+        console.error('Service call error:', error);
+        updateModeStatus('Error: Service call failed', false);
+    });
+}
+
+// Helper function to get display name for mode
+function getModeName(modeName) {
+    const modeMap = {
+        'follow': 'Follow Human',
+        'gps_waypoint': 'GPS Navigation',
+    };
+    return modeMap[modeName] || modeName;
+}
+
+// Update mode status in UI
+function updateModeStatus(message, success) {
+    // You can add a status message area to your HTML, or use existing elements
+    console.log('Mode Status:', message);
+    
+    // Optional: Add visual feedback to the UI
+    const statusElement = document.getElementById('mode-status');
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.className = success === true ? 'success' : 
+                                 success === false ? 'error' : 'loading';
+    }
+}
+
+// Update active mode button
+function updateActiveModeButton(modeName) {
+    const modeButtons = document.querySelectorAll('.mode-btn');
+    modeButtons.forEach(btn => {
+        btn.classList.remove('active');
+        
+        // Check if this button corresponds to the active mode
+        const button = btn.querySelector('button');
+        if (button && button.onclick && button.onclick.toString().includes(modeName)) {
+            btn.classList.add('active');
+        } else if (modeName === 'manual' && btn.textContent.trim() === 'Manual') {
+            btn.classList.add('active');
+        }
+    });
+}
+
+// Toggle controls based on mode
+function toggleControlsForMode(modeName) {
+    const manualControls = document.getElementById('manualControls');
+    const gpsControls = document.getElementById('gpsControls');
+    
+    // Hide all controls first
+    manualControls.style.display = 'none';
+    gpsControls.style.display = 'none';
+    
+    // Show relevant controls
+    switch(modeName) {
+        case 'manual':
+            manualControls.style.display = 'block';
+            break;
+        case 'gps_waypoint':
+            gpsControls.style.display = 'block';
+            break;
+        case 'follow':
+            // Follow mode might not need additional controls
+            // Add any follow-specific controls here if needed
+            break;
+    }
+}
+
 // Disconnect from ROS
 function disconnectFromROS() {
     if (ros) {
@@ -51,6 +169,7 @@ function disconnectFromROS() {
         joystick.destroy();
         joystick = null;
     }
+    setModeService = null; // Clear service reference
     isConnected = false;
     updateConnectionStatus(false);
 }
@@ -159,7 +278,6 @@ function setupJoystick() {
             angular: { x: 0, y: 0, z: angular }
         });
 
-
         cmdVelTopic.publish(twist);
 
         // Update command display
@@ -211,22 +329,29 @@ function updateRuntime() {
 
 // Initialize the interface
 document.addEventListener('DOMContentLoaded', function() {
-    // Mode selection
+    // Mode selection - Updated to handle service calls
     const modeButtons = document.querySelectorAll('.mode-btn');
-    const manualControls = document.getElementById('manualControls');
-    const gpsControls = document.getElementById('gpsControls');
     
     modeButtons.forEach(btn => {
         btn.addEventListener('click', function() {
-            modeButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
+            // Handle manual mode
+            if (this.textContent.trim() === 'Manual') {
+                setMode('manual');
+                return;
+            }
             
+            // Handle buttons with onclick functions (Follow Human, GPS Navigation)
+            const button = this.querySelector('button');
+            if (button && button.onclick) {
+                // The onclick will be handled by the button itself
+                return;
+            }
+            
+            // Handle other modes if needed
             const mode = this.dataset.mode;
-            document.getElementById('currentMode').textContent = this.textContent;
-            
-            // Show/hide controls
-            manualControls.style.display = mode === 'manual' ? 'block' : 'none';
-            gpsControls.style.display = mode === 'gps' ? 'block' : 'none';
+            if (mode) {
+                setMode(mode);
+            }
         });
     });
 

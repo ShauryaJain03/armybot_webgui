@@ -47,11 +47,15 @@
             <div class="section">
                 <div class="section-title">Mode</div>
                 <div class="mode-grid">
-                    <div class="mode-btn active" data-mode="manual">Manual</div>
-                    <div class="mode-btn" data-mode="apriltag">Follow Human</div>
-                    <div class="mode-btn" data-mode="gps">GPS Navigate</div>
-                    <div class="mode-btn" data-mode="autonomous">Explore</div>
-                    <div class="mode-btn" data-mode="return">Return Home</div>
+                    <div class="mode-btn active">Manual</div>
+                    <div>
+                        <button onclick="setMode('follow')" class="mode-btn">Follow Human</button>
+                    </div>
+                    <div>
+                        <button onclick="setMode('gps_waypoint')" class="mode-btn">GPS Navigation</button>
+                    </div>
+                    <div class="mode-btn">Explore</div>
+                    <div class="mode-btn">Return Home</div>
                 </div>
             </div>
 
