@@ -47,15 +47,11 @@
             <div class="section">
                 <div class="section-title">Mode</div>
                 <div class="mode-grid">
-                    <div class="mode-btn active">Manual</div>
-                    <div>
-                        <button onclick="setMode('follow')" class="mode-btn">Follow Human</button>
-                    </div>
-                    <div>
-                        <button onclick="setMode('gps_waypoint')" class="mode-btn">GPS Navigation</button>
-                    </div>
-                    <div class="mode-btn">Explore</div>
-                    <div class="mode-btn">Return Home</div>
+                    <div class="mode-btn active" onclick="setMode('manual')">Manual</div>
+                    <button onclick="setMode('follow')" class="mode-btn">Follow Human</button>
+                    <button onclick="setMode('gps_waypoint')" class="mode-btn">GPS Navigation</button>
+                    <div class="mode-btn" onclick="setMode('explore')">Explore</div>
+                    <div class="mode-btn" onclick="setMode('return_home')">Return Home</div>
                 </div>
             </div>
 
@@ -76,7 +72,7 @@
                     </div>
                 </div>
                 <div class="control-buttons">
-                    <div class="control-btn" onclick="emergencyStop()">Emergency Stop</div>
+                    <div class="control-btn emergency" onclick="emergencyStop()">Emergency Stop</div>
                 </div>
             </div>
 
@@ -119,12 +115,8 @@
         <!-- Visualization Panel -->
         <div class="panel">
             <div class="panel-title">Camera Feed</div>
-            <div class="view-toggles">
-                <!-- <div class="toggle-btn active">Map</div>
-                <div class="toggle-btn">LiDAR</div>-->
-                <div class="toggle-btn">
-                    <img src="http://0.0.0.0:8080/stream?topic=/camera/image_raw" class="image-view" id="camera-feed" alt="Camera Feed">
-                </div>
+            <div class="camera-container">
+                <img src="http://0.0.0.0:8080/stream?topic=/camera/image_raw" class="image-view" id="camera-feed" alt="Camera Feed">
             </div>
             <div class="map-container">
                 <div class="map-placeholder">
