@@ -28,6 +28,7 @@ function connectToROS() {
         setupTopics();
         setupServices(); // Add service setup
         setupJoystick();
+        setupMapViewer();
     });
 
     ros.on('error', function (error) {
@@ -374,3 +375,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update runtime every second
     setInterval(updateRuntime, 1000);
 });
+
+function sendReturn() {
+    const lat = parseFloat(document.getElementById('lat').value);
+    const lon = parseFloat(document.getElementById('lon').value);
+
+    const service = new ROSLIB.Service({
+        ros: ros,
+        name: '/send_gps_home',
+        serviceType: 'bot_msgs/srv/GPSHome'
+    });
+
+    const request = new ROSLIB.ServiceRequest({ latitude: lat, longitude: lon });
+
+    service.callService(request, function(result) {
+        if (result.success) {
+            console.log("GPS coordinates sent. Switching to return_home mode...");
+            setMode('return_home');
+        } else {
+            console.error("Failed to set GPS:", result.message);
+        }
+    });
+}

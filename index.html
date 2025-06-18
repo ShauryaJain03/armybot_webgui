@@ -10,6 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/eventemitter2@6.4.5/umd/eventemitter2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ros3d/build/ros3d.min.js"></script>
+    <script src="http://static.robotwebtools.org/ros2djs/current/ros2d.min.js"></script>
+    <script src="http://static.robotwebtools.org/nav2djs/current/nav2d.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
     <script src="http://static.robotwebtools.org/threejs/current/three.min.js"></script>
     <script src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
@@ -93,6 +95,23 @@
                 </div>
             </div>
 
+            <!-- Return Home -->
+            <div class="section" id="returnHome">
+                <div class="section-title">Return Home</div>
+                <div class="input-group">
+                    <label>Latitude</label>
+                    <input id="lat" placeholder="47.47894999999999" value="47.47894999999999" />
+                </div>
+                <div class="input-group">
+                    <label>Longitude</label>
+                    <input id="lon" placeholder="19.057785" value="19.057785" />
+                </div>
+                <div class="control-buttons">
+                    <button class="control-btn" onclick="sendReturn()">Navigate</button>
+                </div>
+            </div>
+
+
             <!-- Settings -->
             <div class="section">
                 <div class="section-title">Settings</div>
@@ -120,8 +139,7 @@
             </div>
             <div class="map-container">
                 <div class="map-placeholder">
-                    Map Visualization<br>
-                    <small>Connect to ROS for live data</small>
+                    <div id="map-canvas" style="width: 800px; height: 600px; border: 1px solid #444;"></div>
                 </div>
             </div>
         </div>
