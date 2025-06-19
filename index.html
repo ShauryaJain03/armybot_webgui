@@ -46,14 +46,14 @@
             </div>
             
             <!-- Mode Selection -->
-            <div class="section">
+            <div class="section">   
                 <div class="section-title">Mode</div>
                 <div class="mode-grid">
-                    <div class="mode-btn active" onclick="setMode('manual')">Manual</div>
-                    <button onclick="setMode('follow')" class="mode-btn">Follow Human</button>
-                    <button onclick="setMode('gps_waypoint')" class="mode-btn">GPS Navigation</button>
-                    <div class="mode-btn" onclick="setMode('explore')">Explore</div>
-                    <div class="mode-btn" onclick="setMode('return_home')">Return Home</div>
+                    <div class="mode-btn active">Manual</div>
+                    <div class="mode-btn">Follow Human</div>
+                    <div class="mode-btn">GPS Navigation</div>
+                    <div class="mode-btn">Explore</div>
+                    <div class="mode-btn">Return Home</div>
                 </div>
             </div>
 
@@ -110,7 +110,6 @@
                     <button class="control-btn" onclick="sendReturn()">Navigate</button>
                 </div>
             </div>
-
 
             <!-- Settings -->
             <div class="section">
@@ -182,6 +181,18 @@
                 <div class="status-item">
                     <span class="status-label">Z</span>
                     <span class="status-value" id="position-z">0.00 m</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Latitude</span>
+                    <span class="status-value" id="lat-display">0.00</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Longitude</span>
+                    <span class="status-value" id="lon-display">0.00</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Altitude</span>
+                    <span class="status-value" id="alt-display">0.00</span>
                 </div>
                 <div class="status-item">
                     <span class="status-label">Heading</span>
